@@ -38,6 +38,7 @@ add_clang_library(clangTidyReadabilityModule
   StringCompareCheck.cpp
   UniqueptrDeleteReleaseCheck.cpp
   UppercaseLiteralSuffixCheck.cpp
+  VisibleExceptionPropagationCheck.cpp
 
   LINK_LIBS
   clangAST

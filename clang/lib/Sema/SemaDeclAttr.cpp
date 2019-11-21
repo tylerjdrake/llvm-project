@@ -6999,6 +6999,9 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     handleSimpleAttributeWithExclusions<NotTailCalledAttr, AlwaysInlineAttr>(
         S, D, AL);
     break;
+  case ParsedAttr::AT_MaybeUnhandled:
+    handleSimpleAttribute<MaybeUnhandledAttr>(S, D, AL);
+    break;
   case ParsedAttr::AT_DisableTailCalls:
     handleSimpleAttributeWithExclusions<DisableTailCallsAttr, NakedAttr>(S, D,
                                                                          AL);

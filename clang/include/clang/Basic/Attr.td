@@ -1712,6 +1712,11 @@ def NotTailCalled : InheritableAttr {
   let Documentation = [NotTailCalledDocs];
 }
 
+def MaybeUnhandled : StmtAttr {
+  let Spellings = [Clang<"maybe_unhandled">];
+  let Documentation = [MaybeUnhandledDocs];
+}
+
 def NoStackProtector : InheritableAttr {
   let Spellings = [Clang<"no_stack_protector">];
   let Subjects = SubjectList<[Function]>;

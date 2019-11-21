@@ -3353,6 +3353,16 @@ Marking virtual functions as ``not_tail_called`` is an error:
   }];
 }
 
+def MaybeUnhandledDocs : Documentation {
+  let Category = DocCatStmt;
+  let Heading = "maybe_unhandled";
+  let Content = [{
+
+FIXME: TYDO Add documentation.
+
+  }];
+}
+
 def NoThrowDocs : Documentation {
   let Category = DocCatFunction;
   let Content = [{
