@@ -17,20 +17,20 @@ using namespace clang::ast_matchers;
 namespace clang {
 
 namespace {
-// Matcher for AttributedStmt that matches a certain Attr kind.
-AST_MATCHER_P(Stmt, hasStmtAttr, attr::Kind, kind) {
-  if (Node.getStmtClass() == Node.AttributedStmtClass) {
-    auto attrs = static_cast<const AttributedStmt&>(Node).getAttrs();
-    for (const Attr* attr : attrs) {
-      if (attr->getKind() == kind) {
-        return true;
-      }
+AST_MATCHER_P(AttributedStmt, hasStmtAttr, attr::Kind, kind) {
+  auto attrs = Node.getAttrs();
+  for (const Attr* attr : attrs) {
+    if (attr->getKind() == kind) {
+      return true;
     }
   }
   return false;
 }
-auto hasThrowingFunctionDecl()
-{
+AST_MATCHER_P(AttributedStmt, hasSubStmt, ast_matchers::internal::Matcher<Stmt>, InnerMatcher) {
+  const Stmt *const Else = Node.getSubStmt();
+  return (Else != nullptr && InnerMatcher.matches(*Else, Finder, Builder));
+}
+auto hasThrowingFunctionDecl() {
   return hasDeclaration(
     functionDecl(
       unless(
@@ -38,37 +38,32 @@ auto hasThrowingFunctionDecl()
           isNoThrow(),
           isExternC()))));
 }
-auto throwingExpr()
-{
+auto throwingExpr() {
   return expr(
     anyOf(
       cxxConstructExpr(hasThrowingFunctionDecl()),
       callExpr(hasThrowingFunctionDecl())));
 }
-auto markedDecl()
-{
+auto markedDecl() {
   return decl(
     hasAttr(attr::Kind::MaybeUnhandled));
 }
-auto markedStmt()
-{
-  return stmt(
+auto markedStmt() {
+  return attributedStmt(
     hasStmtAttr(attr::Kind::MaybeUnhandled));
 }
-auto throwingDecl()
-{
+auto throwingDecl() {
   return varDecl(
     hasDescendant(throwingExpr()));
 }
-auto throwingStmt()
-{
+auto throwingStmt() {
   return stmt(
     allOf(
       unless(declStmt()), // matched by "throwing-decl"
       unless(cxxConstructExpr()), // matched by "throwing-decl"
       unless(compoundStmt()), // too coarse to be useful
       unless(cxxThrowExpr()), // redundant to annotate throw stmts.
-      unless(hasAncestor(hasStmtAttr(attr::Kind::MaybeUnhandled))),
+      unless(hasParent(markedStmt())), // already annotated.
       anyOf(
         throwingExpr(),
         hasDescendant(throwingExpr()))));

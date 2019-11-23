@@ -612,6 +612,7 @@ const internal::VariadicDynCastAllOfMatcher<Decl, FunctionTemplateDecl>
     functionTemplateDecl;
 const internal::VariadicDynCastAllOfMatcher<Decl, FriendDecl> friendDecl;
 const internal::VariadicAllOfMatcher<Stmt> stmt;
+const internal::VariadicDynCastAllOfMatcher<Stmt, AttributedStmt> attributedStmt;
 const internal::VariadicDynCastAllOfMatcher<Stmt, DeclStmt> declStmt;
 const internal::VariadicDynCastAllOfMatcher<Stmt, MemberExpr> memberExpr;
 const internal::VariadicDynCastAllOfMatcher<Stmt, UnresolvedMemberExpr>

@@ -1210,6 +1210,16 @@ extern const internal::VariadicDynCastAllOfMatcher<Decl, FriendDecl> friendDecl;
 ///   matches both the compound statement '{ ++a; }' and '++a'.
 extern const internal::VariadicAllOfMatcher<Stmt> stmt;
 
+/// Matches statements with attributes.
+///
+/// Example matches '[[clang::maybe_unhandled]] foo(i);'
+/// \code
+///   int i = 3;
+///   [[clang::maybe_unhandled]] foo(i);
+///   bar(i);
+/// \endcode
+extern const internal::VariadicDynCastAllOfMatcher<Stmt, AttributedStmt> attributedStmt;
+
 /// Matches declaration statements.
 ///
 /// Given
