@@ -12,8 +12,6 @@
 
 using namespace clang::ast_matchers;
 
-#include <iostream>
-
 namespace clang {
 
 namespace {
@@ -52,6 +50,14 @@ auto markedStmt() {
   return attributedStmt(
     hasStmtAttr(attr::Kind::MaybeUnhandled));
 }
+auto markedIfForWhileSwitchStmt() {
+  return stmt(
+    anyOf(
+      ifStmt(hasParent(markedStmt())),
+      forStmt(hasParent(markedStmt())),
+      whileStmt(hasParent(markedStmt())),
+      switchStmt(hasParent(markedStmt()))));
+}
 auto throwingDecl() {
   return varDecl(
     hasDescendant(throwingExpr()));
@@ -64,6 +70,12 @@ auto throwingStmt() {
       unless(compoundStmt()), // too coarse to be useful
       unless(cxxThrowExpr()), // redundant to annotate throw stmts.
       unless(hasParent(markedStmt())), // already annotated.
+      unless(hasParent(markedIfForWhileSwitchStmt())), // already annotated
+      unless(hasAncestor( // already annotated 
+        stmt(
+          allOf(
+            unless(compoundStmt()),
+            hasParent(markedIfForWhileSwitchStmt()))))),
       anyOf(
         throwingExpr(),
         hasDescendant(throwingExpr()))));
