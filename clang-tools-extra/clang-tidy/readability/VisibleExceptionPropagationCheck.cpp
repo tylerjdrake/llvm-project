@@ -122,13 +122,13 @@ void VisibleExceptionPropagationCheck::check(const MatchFinder::MatchResult &Res
     diag(m->getBeginLoc(), "Cannot implicitly throw, remove '[[clang::maybe_unhandled]]'");
   }
   else if (const auto* m = Result.Nodes.getNodeAs<Decl>("decl-missing-mark")) {
-    diag(m->getBeginLoc(), "May throw, add '[[clang::maybe_unhandled]]'");
+    diag(m->getBeginLoc(), "May implicitly throw, add '[[clang::maybe_unhandled]]'");
   }
   else if (const auto* m = Result.Nodes.getNodeAs<Stmt>("stmt-bad-mark")) {
     diag(m->getBeginLoc(), "Cannot implicitly throw, remove '[[clang::maybe_unhandled]]'");
   }
   else if (const auto* m = Result.Nodes.getNodeAs<Stmt>("stmt-missing-mark")) {
-    diag(m->getBeginLoc(), "May throw, add '[[clang::maybe_unhandled]]'");
+    diag(m->getBeginLoc(), "May implicitly throw, add '[[clang::maybe_unhandled]]'");
   }
 }
 
