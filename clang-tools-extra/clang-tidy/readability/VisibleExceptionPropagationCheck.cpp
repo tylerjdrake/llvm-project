@@ -58,6 +58,7 @@ auto throwingStmt()
       unless(declStmt()), // matched by "throwing-decl"
       unless(cxxConstructExpr()), // matched by "throwing-decl"
       unless(compoundStmt()), // too coarse to be useful
+      unless(cxxThrowExpr()), // redundant to annotate throw stmts.
       unless(hasAncestor(hasStmtAttr(attr::Kind::MaybeUnhandled))),
       anyOf(
         throwingExpr(),
@@ -108,7 +109,7 @@ void VisibleExceptionPropagationCheck::check(const MatchFinder::MatchResult &Res
     diag(m->getBeginLoc(), "May throw, add '[[clang::maybe_unused]]'");
   }
   else if (const auto* m = Result.Nodes.getNodeAs<Stmt>("stmt-bad-mark")) {
-    diag(m->getBeginLoc(), "Cannot throw, remove '[[clang::maybe_unused]]'");
+    diag(m->getBeginLoc(), "Cannot implicitly throw, remove '[[clang::maybe_unhandled]]'");
   }
   else if (const auto* m = Result.Nodes.getNodeAs<Stmt>("stmt-missing-mark")) {
     diag(m->getBeginLoc(), "May throw, add '[[clang::maybe_unused]]'");
