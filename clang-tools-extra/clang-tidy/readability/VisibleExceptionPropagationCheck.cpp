@@ -29,12 +29,21 @@ AST_MATCHER_P(Stmt, hasStmtAttr, attr::Kind, kind) {
   }
   return false;
 }
+auto hasThrowingFunctionDecl()
+{
+  return hasDeclaration(
+    functionDecl(
+      unless(
+        anyOf(
+          isNoThrow(),
+          isExternC()))));
+}
 auto throwingExpr()
 {
   return expr(
     anyOf(
-      cxxConstructExpr(hasDeclaration(functionDecl(unless(isNoThrow())))),
-      callExpr(callee(functionDecl(unless(isNoThrow()))))));
+      cxxConstructExpr(hasThrowingFunctionDecl()),
+      callExpr(hasThrowingFunctionDecl())));
 }
 auto markedDecl()
 {
