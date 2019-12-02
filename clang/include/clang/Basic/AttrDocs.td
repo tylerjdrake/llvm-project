@@ -3358,7 +3358,7 @@ def MaybeUnhandledDocs : Documentation {
   let Heading = "maybe_unhandled";
   let Content = [{
 
-FIXME: TYDO Add documentation.
+Attribute for use with readability-visible-exception-propagation clang-tidy check.
 
   }];
 }

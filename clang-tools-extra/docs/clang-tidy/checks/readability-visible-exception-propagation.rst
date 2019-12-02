@@ -3,10 +3,8 @@
 readability-visible-exception-propagation
 =========================================
 
-Issues warnings for call sites of throwing functions that are not annotaed [[try]].
-Issues warnings for call sites of noexcept functions that are annotated [[try]].
-
-FIXME: TYDO
+Issues warnings for call sites of throwing functions that are not annotaed [[clang::maybe_unhandled]].
+Issues warnings for call sites of noexcept functions that are annotated [[clang::maybe_unhandled]].
 
 .. code-block:: c++
 

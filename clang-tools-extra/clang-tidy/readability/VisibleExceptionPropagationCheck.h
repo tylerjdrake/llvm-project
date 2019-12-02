@@ -15,7 +15,7 @@ namespace clang {
 namespace tidy {
 namespace readability {
 
-/// FIXME: TYDO Write a short description.
+/// Require call-sites of throwing functions to be annotated [[clang::maybe_unhandled]].
 ///
 /// For the user-facing documentation see:
 /// http://clang.llvm.org/extra/clang-tidy/checks/readability-visible-exception-propagation.html

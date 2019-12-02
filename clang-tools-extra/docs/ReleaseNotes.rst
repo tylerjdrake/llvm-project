@@ -199,8 +199,7 @@ The improvements are...
 - New :doc:`readability-visible-exception-propagation
   <clang-tidy/checks/readability-visible-exception-propagation>` check.
 
-  Issues warnings for call sites of throwing functions that are not annotaed [[try]].
-  FIXME: TYDO
+  Issues warnings for call sites of throwing functions that are not annotaed [[clang::maybe_unhandled]].
 
 Improvements to clang-include-fixer
 -----------------------------------
