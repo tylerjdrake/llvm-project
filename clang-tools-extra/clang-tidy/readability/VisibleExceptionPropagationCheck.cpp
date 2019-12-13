@@ -83,14 +83,18 @@ namespace clang {
     auto throwingForStmt()
     {
       return stmt(
-        forStmt(
-          anyOf(
-            hasLoopInit(
-              throwingExprSelfOrDescendant()),
-            hasCondition(
-              throwingExprSelfOrDescendant()),
-            hasIncrement(
-              throwingExprSelfOrDescendant()))));
+        anyOf(
+          cxxForRangeStmt(
+            hasRangeInit(
+              throwingExprSelfOrDescendant())),
+          forStmt(
+            anyOf(
+              hasLoopInit(
+                throwingExprSelfOrDescendant()),
+              hasCondition(
+                throwingExprSelfOrDescendant()),
+              hasIncrement(
+                throwingExprSelfOrDescendant())))));
     }
     auto throwingWhileStmt()
     {
@@ -113,15 +117,23 @@ namespace clang {
           hasCondition(
             throwingExprSelfOrDescendant())));
     }
+    auto throwingReturnStmt()
+    {
+      return stmt(
+        returnStmt(
+          hasReturnValue(throwingExprSelfOrDescendant())));
+    }
     auto throwingRegularStmt()
     {
       return stmt(
         allOf(
           unless(ifStmt()),
           unless(forStmt()),
+          unless(cxxForRangeStmt()),
           unless(whileStmt()),
           unless(switchStmt()),
           unless(doStmt()),
+          unless(returnStmt()),
           throwingExprSelfOrDescendant()));
     }
 
@@ -136,13 +148,14 @@ namespace clang {
           anyOf(
             hasParent(compoundStmt()), // needs to be an attributable stmt.
             hasParent(attributedStmt()), // or already attributed.
-            hasParent(caseStmt())),
+            hasParent(caseStmt())), // or in a switch statement.
           anyOf(
             throwingIfStmt(),
             throwingForStmt(),
             throwingWhileStmt(),
             throwingSwitchStmt(),
             throwingDoStmt(),
+            throwingReturnStmt(),
             throwingRegularStmt())));
     }
   }
