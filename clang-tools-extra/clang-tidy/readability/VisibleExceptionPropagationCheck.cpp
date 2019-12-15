@@ -9,6 +9,7 @@
 #include "VisibleExceptionPropagationCheck.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include <queue>
 
 using namespace clang::ast_matchers;
 
@@ -29,8 +30,66 @@ namespace clang {
 
     // Match attributed stmt with certain sub statment.
     AST_MATCHER_P(AttributedStmt, hasSubStmt, ast_matchers::internal::Matcher<Stmt>, InnerMatcher) {
-      const Stmt *const Else = Node.getSubStmt();
-      return (Else != nullptr && InnerMatcher.matches(*Else, Finder, Builder));
+      const Stmt *const sub = Node.getSubStmt();
+      return (sub != nullptr && InnerMatcher.matches(*sub, Finder, Builder));
+    }
+
+    AST_MATCHER_P(Expr, hasDescendantNotCompoundOrInCompoundExpr, ast_matchers::internal::Matcher<Stmt>, InnerMatcher) {
+      
+      // Prime queue.
+      std::queue<const Stmt*> q;
+      for (const Stmt* stmt : Node.children()) {
+        q.push(stmt);
+      }
+
+      // Check children.
+      while (!q.empty()) {
+        const Stmt* curr = q.front();
+        q.pop();
+        if (curr == nullptr) {
+          continue;
+        }
+
+        if (curr->getStmtClass() != Stmt::CompoundStmtClass) {
+          if (InnerMatcher.matches(*curr, Finder, Builder)) {
+            return true;
+          }
+          for (const Stmt* stmt : curr->children()) {
+            q.push(stmt);
+          }
+        }
+      }
+      
+      return false; // needs to be the result of TraverseStmt with InnerMatcher passed through.
+    }
+    AST_MATCHER_P(VarDecl, hasDescendantNotCompoundOrInCompoundStmt, ast_matchers::internal::Matcher<Stmt>, InnerMatcher) {
+      
+      // Prime queue.
+      if (Node.getInit() == nullptr) {
+        return false;
+      }
+      std::queue<const Stmt*> q;
+      q.push(Node.getInit());
+
+      // Check children.
+      while (!q.empty()) {
+        const Stmt* curr = q.front();
+        q.pop();
+        if (curr == nullptr) {
+          continue;
+        }
+
+        if (curr->getStmtClass() != Stmt::CompoundStmtClass) {
+          if (InnerMatcher.matches(*curr, Finder, Builder)) {
+            return true;
+          }
+          for (const Stmt* stmt : curr->children()) {
+            q.push(stmt);
+          }
+        }
+      }
+      
+      return false; // needs to be the result of TraverseStmt with InnerMatcher passed through.
     }
 
     // Helper for throwingExpr.
@@ -54,7 +113,7 @@ namespace clang {
       return expr(
         anyOf(
           throwingExpr(),
-          hasDescendant(throwingExpr())));
+          hasDescendantNotCompoundOrInCompoundExpr(throwingExpr())));
     }
 
     // Match decl's and stmt's that are annotated.
@@ -70,7 +129,9 @@ namespace clang {
     // Match decl's that have a throwing subexpression.
     auto throwingDecl() {
       return varDecl(
-        hasDescendant(throwingExpr()));
+        allOf(
+          hasParent(declStmt(hasParent(compoundStmt()))),
+          hasDescendantNotCompoundOrInCompoundStmt(throwingExpr())));
     }
 
     auto throwingIfStmt()
@@ -144,6 +205,7 @@ namespace clang {
           unless(declStmt()), // matched by "throwing-decl"
           unless(compoundStmt()), // too course to be useful.
           unless(cxxThrowExpr()), // explicitly throws already.
+          unless(exprWithCleanups(has(cxxThrowExpr()))), // still just a throw statement.
           unless(attributedStmt()), // need only to match attributedStmt substmt.
           anyOf(
             hasParent(compoundStmt()), // needs to be an attributable stmt.
@@ -164,7 +226,6 @@ namespace tidy {
 namespace readability {
 
 void VisibleExceptionPropagationCheck::registerMatchers(MatchFinder *Finder) {
-
   Finder->addMatcher(
     decl(
       allOf(
@@ -195,7 +256,6 @@ void VisibleExceptionPropagationCheck::registerMatchers(MatchFinder *Finder) {
 }
 
 void VisibleExceptionPropagationCheck::check(const MatchFinder::MatchResult &Result) {
-
   if (const auto* m = Result.Nodes.getNodeAs<Decl>("decl-bad-mark")) {
     diag(m->getBeginLoc(), "Cannot implicitly throw, remove '[[clang::maybe_unhandled]]'");
   }
